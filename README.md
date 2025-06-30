@@ -1,4 +1,4 @@
-# SafeBit REST API
+# SafeBite REST API
 
 This project is a Node.js/Express REST API designed for integration with a Flutter app. It implements endpoints for users, sensors, readings, alerts, food items, activity logs, and sessions, matching the provided MySQL schema.
 
