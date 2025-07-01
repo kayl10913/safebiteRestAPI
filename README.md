@@ -14,14 +14,14 @@ This project is a Node.js/Express REST API designed for integration with a Flutt
 
 ## Setup
 1. Install dependencies:
-'''
+```bash
 npm install
-'''
+```
 2. Configure your database connection in `.env` (to be created).
 3. Run the server:
-'''
+```bash
 npm start
-'''
+```
 
 ## Endpoints
 
@@ -49,25 +49,25 @@ npm start
   - Or use `?start=YYYY-MM-DD&end=YYYY-MM-DD` for a range
 
 #### Example: Food Risk Response
-'''json
+```json
 {
   "success": true,
   "score": 40,
   "total": 10,
   "risky": 4
 }
-'''
+```
 
 #### Example: Sensor Activity Response
-'''json
+```json
 {
   "success": true,
   "usage_count": 42
 }
-'''
+```
 
 #### Example: Recent Food Detections Response
-'''json
+```json
 {
   "success": true,
   "data": [
@@ -75,7 +75,7 @@ npm start
     { "food": "Sinigang", "date": "Jun 3, 2025", "status": "Spoilt" }
   ]
 }
-'''
+```
 
 ## Next Steps
 - Implement models, controllers, and routes for each table.
