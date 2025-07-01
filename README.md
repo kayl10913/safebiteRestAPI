@@ -76,12 +76,3 @@ npm start
   ]
 }
 ```
-
-## Next Steps
-- Implement models, controllers, and routes for each table.
-- Add authentication middleware.
-- Connect to MySQL using `mysql2` or `sequelize`.
-
----
-
-This file will be updated as the implementation progresses.
