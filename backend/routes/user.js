@@ -6,49 +6,65 @@ const bcrypt = require('bcrypt');
 // Create a new user
 router.post('/newuser', async (req, res) => {
   try {
-    const { first_name, last_name, username, email, password } = req.body;
+    const { email, password } = req.body;
 
-    // Basic validation
-    if (!first_name || !last_name || !username || !email || !password) {
-        return res.status(400).json({ success: false, message: 'All fields are required' });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    // Auto-generate username from email
+    const username = email.split('@')[0];
+
+    // Check if email or username already exists
+    const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
+    if (existingUsers.length > 0) {
+      return res.status(409).json({ success: false, error: 'Username or email already exists.' });
     }
 
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
 
     const newUser = {
-        first_name,
-        last_name,
-        username,
-        email,
-        password_hash,
+      first_name: username, // Default first_name to username
+      last_name: 'User',    // Default last_name
+      username,
+      email,
+      password_hash,
     };
+    
+    const result = await db.query('INSERT INTO users SET ?', newUser);
+    res.status(201).json({ success: true, message: 'User created successfully', userId: result[0].insertId });
 
-    await db.query('INSERT INTO users SET ?', newUser);
-    res.json({ success: true, message: 'User created successfully' });
   } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-        return res.status(409).json({ success: false, message: 'Username or email already exists.' });
-    }
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    const { email: emailOrUsername, password } = req.body;
+    
+    if (!emailOrUsername || !password) {
+        return res.status(400).json({ success: false, error: 'Email/Username and password are required' });
     }
+
+    const [rows] = await db.query('SELECT * FROM users WHERE email = ? OR username = ?', [emailOrUsername, emailOrUsername]);
+    
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+
     const user = rows[0];
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    
     if (!passwordMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+      return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
-    // Login successful, return a token or session ID
-    // Note: You would need to implement token generation (e.g., using JWT)
-    res.json({ success: true, message: 'Login successful', user_id: user.user_id });
+    
+    // Remove password hash from the user object before sending it
+    delete user.password_hash;
+    
+    res.json({ success: true, message: 'Login successful', user: user });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
